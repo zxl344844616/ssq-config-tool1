@@ -1,0 +1,2574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双色球智能筛选系统规则配置表</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: 4px solid #2980b9;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        h1 i {
+            color: #f1c40f;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .system-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .btn-primary {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+        }
+        
+        .btn-export {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-export:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-import {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .btn-import:hover {
+            background-color: #8e44ad;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+        
+        .content-area {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .rules-list {
+            width: 250px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+        
+        .rule-category {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .rule-category:hover {
+            background-color: #e9ecef;
+        }
+        
+        .rule-category.active {
+            background-color: #e3f2fd;
+            border-left-color: #3498db;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                transform: translateX(100%); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background-color: #2c3e50;
+            color: white;
+            text-align: left;
+            padding: 18px 15px;
+            font-weight: 600;
+            font-size: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .editable-cell {
+            background-color: #fffde7 !important;
+            font-weight: 600;
+            color: #333;
+            border: 2px solid #ffeb3b;
+            border-radius: 5px;
+            min-width: 150px;
+        }
+        
+        .editable-cell.invalid {
+            background-color: #ffebee !important;
+            border-color: #ef5350;
+            color: #d32f2f;
+        }
+        
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .rule-id {
+            font-weight: bold;
+            color: #2c3e50;
+            width: 70px;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        
+        .rule-desc {
+            font-weight: 500;
+            width: 220px;
+        }
+        
+        .rule-definition {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.5;
+            border-left: 4px solid #3498db;
+            min-width: 250px;
+        }
+        
+        .rule-param {
+            width: 200px;
+        }
+        
+        .footer {
+            padding: 20px 30px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            .content {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 1000px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .content-area {
+                flex-direction: column;
+            }
+            
+            .rules-list {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+                overflow-x: auto;
+                white-space: nowrap;
+                padding: 10px 0;
+            }
+            
+            .rule-category {
+                display: inline-block;
+                margin-right: 10px;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+                padding: 10px 15px;
+            }
+            
+            .rule-category.active {
+                border-left: none;
+                border-bottom-color: #3498db;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+            
+            .tab-container {
+                justify-content: center;
+            }
+            
+            .buttons {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+            }
+            
+            .system-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        .instructions {
+            background-color: #f0f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-blue {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .badge-green {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .badge-red {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .badge-orange {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .badge-purple {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .export-options {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
+        
+        .export-options h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .export-small {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+        
+        .notification-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .notification-error {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .notification-info {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .notification-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .advanced-options {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .advanced-options h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .preset-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .preset-btn {
+            padding: 8px 15px;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .preset-btn:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .preset-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        
+        .version-history {
+            margin-top: 20px;
+        }
+        
+        .version-history h5 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .version-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            background-color: white;
+        }
+        
+        .version-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .version-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .version-item:last-child {
+            border-bottom: none;
+        }
+        
+        .version-time {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .validation-error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .validation-error.show {
+            display: block;
+        }
+        
+        .input-with-validation {
+            position: relative;
+        }
+        
+        .import-file-input {
+            display: none;
+        }
+        
+        .file-upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #9b59b6;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-label:hover {
+            background-color: #8e44ad;
+        }
+        
+        .collapse-toggle {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .collapse-toggle:hover {
+            background-color: #2980b9;
+        }
+        
+        .collapsible-section {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .collapsible-section.collapsed {
+            max-height: 0;
+        }
+        
+        .rule-group {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .group-header {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            font-weight: 600;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .group-content {
+            padding: 15px;
+        }
+        
+        .group-content.collapsed {
+            display: none;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .parameter-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-filter"></i> 双色球智能筛选系统规则配置表</h1>
+            <p class="subtitle">58项核心规则动态配置，参数实时调整，支持Excel导出与本地保存</p>
+            
+            <div class="system-stats">
+                <div class="stat-badge">
+                    <i class="fas fa-bullseye"></i>
+                    <span>红球组合: <strong>11,075,568</strong> 种</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>筛选规则: <strong>58</strong> 项</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-basketball-ball"></i>
+                    <span>蓝球固定: <strong>01</strong></span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>最后保存: <span id="lastSaved">无</span></span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="controls">
+            <div class="tab-container">
+                <div class="tab active" data-tab="basic">
+                    <i class="fas fa-list-ol"></i> 基础集合规则
+                    <span class="badge badge-blue">31</span>
+                </div>
+                <div class="tab" data-tab="partition">
+                    <i class="fas fa-th-large"></i> 分区结构规则
+                    <span class="badge badge-green">4</span>
+                </div>
+                <div class="tab" data-tab="position">
+                    <i class="fas fa-arrows-alt-h"></i> 位置与跨度
+                    <span class="badge badge-red">7</span>
+                </div>
+                <div class="tab" data-tab="numeric">
+                    <i class="fas fa-calculator"></i> 数值特征
+                    <span class="badge badge-orange">15</span>
+                </div>
+                <div class="tab" data-tab="blue">
+                    <i class="fas fa-basketball-ball"></i> 蓝球规则
+                    <span class="badge badge-purple">1</span>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button class="btn btn-secondary" id="resetBtn">
+                    <i class="fas fa-redo"></i> 重置
+                </button>
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-save"></i> 保存配置
+                </button>
+                <label class="btn btn-import" id="importBtn">
+                    <i class="fas fa-file-import"></i> 导入Excel
+                    <input type="file" id="importFile" class="import-file-input" accept=".xlsx,.xls">
+                </label>
+                <button class="btn btn-export" id="exportBtn">
+                    <i class="fas fa-file-excel"></i> 导出Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+            <ul>
+                <li><span class="highlight">黄色高亮单元格</span>为可编辑参数，可直接修改</li>
+                <li>点击上方选项卡或左侧分类列表切换不同规则类别</li>
+                <li>修改后点击"保存配置"保存到浏览器本地存储</li>
+                <li>支持从Excel文件导入配置或导出为Excel文件</li>
+                <li>点击"重置"恢复所有参数为原始默认值</li>
+                <li>使用搜索功能快速查找特定规则</li>
+                <li>基础集合规则已按类型分组，支持分组折叠/展开</li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <div class="rules-list">
+                <div class="rule-category active" data-tab="basic">
+                    <i class="fas fa-list-ol"></i> 基础集合规则 (R1-R31)
+                </div>
+                <div class="rule-category" data-tab="partition">
+                    <i class="fas fa-th-large"></i> 分区结构规则 (R32-R35)
+                </div>
+                <div class="rule-category" data-tab="position">
+                    <i class="fas fa-arrows-alt-h"></i> 位置与跨度规则 (R36-R42)
+                </div>
+                <div class="rule-category" data-tab="numeric">
+                    <i class="fas fa-calculator"></i> 数值特征与排除规则 (R43-R57)
+                </div>
+                <div class="rule-category" data-tab="blue">
+                    <i class="fas fa-basketball-ball"></i> 蓝球规则 (R58)
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- 基础集合规则 -->
+                <div class="tab-content active" id="basic-tab">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="basicSearch" placeholder="搜索基础集合规则 (R1-R31)...">
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">31</div>
+                            <div class="stat-label">基础规则数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="basic-editable">31</div>
+                            <div class="stat-label">可编辑参数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">22</div>
+                            <div class="stat-label">集合总数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">最大集合</div>
+                        </div>
+                    </div>
+                    
+                    <button class="collapse-toggle" id="basicCollapseToggle">
+                        <i class="fas fa-chevron-down"></i> 展开所有分组
+                    </button>
+                    
+                    <div id="basic-table-container">
+                        <!-- 表格将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                
+                <!-- 分区结构规则 -->
+                <div class="tab-content" id="partition-tab">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="partitionSearch" placeholder="搜索分区结构规则 (R32-R35)...">
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">分区规则数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">可编辑参数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">分区类型</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">11</div>
+                            <div class="stat-label">最大分区数</div>
+                        </div>
+                    </div>
+                    
+                    <table id="partition-table">
+                        <thead>
+                            <tr>
+                                <th width="80">规则ID</th>
+                                <th width="220">规则描述</th>
+                                <th>分区定义</th>
+                                <th width="200">参数要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- R32-R35 规则行将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 位置与跨度规则 -->
+                <div class="tab-content" id="position-tab">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="positionSearch" placeholder="搜索位置与跨度规则 (R36-R42)...">
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label">位置规则数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label">可编辑参数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">6</div>
+                            <div class="stat-label">位置编号</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">28</div>
+                            <div class="stat-label">最大跨度值</div>
+                        </div>
+                    </div>
+                    
+                    <table id="position-table">
+                        <thead>
+                            <tr>
+                                <th width="80">规则ID</th>
+                                <th width="220">规则描述</th>
+                                <th>位置/跨度定义</th>
+                                <th width="200">参数要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- R36-R42 规则行将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 数值特征与排除规则 -->
+                <div class="tab-content" id="numeric-tab">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="numericSearch" placeholder="搜索数值特征规则 (R43-R57)...">
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">特征规则数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label">可编辑参数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label">排除关系</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">9</div>
+                            <div class="stat-label">最大AC值</div>
+                        </div>
+                    </div>
+                    
+                    <table id="numeric-table">
+                        <thead>
+                            <tr>
+                                <th width="80">规则ID</th>
+                                <th width="220">规则描述</th>
+                                <th>特征定义</th>
+                                <th width="200">参数要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- R43-R57 规则行将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="export-options">
+                        <h4><i class="fas fa-download"></i> 导出选项</h4>
+                        <p>可以导出完整Excel文件或按分类导出：</p>
+                        <div class="export-buttons">
+                            <button class="btn btn-primary export-small" id="exportAllBtn">
+                                <i class="fas fa-file-excel"></i> 导出完整配置
+                            </button>
+                            <button class="btn btn-secondary export-small" id="exportNumericBtn">
+                                <i class="fas fa-calculator"></i> 仅导出本类规则
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 蓝球规则 -->
+                <div class="tab-content" id="blue-tab">
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">蓝球规则数量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">可编辑参数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">01</div>
+                            <div class="stat-label">固定蓝球</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">58</div>
+                            <div class="stat-label">规则总数</div>
+                        </div>
+                    </div>
+                    
+                    <table id="blue-table">
+                        <thead>
+                            <tr>
+                                <th width="80">规则ID</th>
+                                <th width="220">规则描述</th>
+                                <th>固定值</th>
+                                <th width="200">参数要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- R58 规则行将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="instructions" style="margin-top: 20px;">
+                        <h3><i class="fas fa-lightbulb"></i> 蓝球规则说明</h3>
+                        <p>当前蓝球固定为 <strong>01</strong>。如需修改蓝球选择规则，可以在此处调整参数要求。</p>
+                        <p>注意：双色球智能筛选系统主要针对红球组合进行筛选，蓝球规则相对简单。</p>
+                    </div>
+                </div>
+                
+                <!-- 高级选项区域 -->
+                <div class="advanced-options">
+                    <h4><i class="fas fa-cogs"></i> 高级选项</h4>
+                    
+                    <div class="preset-selector">
+                        <div>预设配置：</div>
+                        <button class="preset-btn" data-preset="strict">严格筛选</button>
+                        <button class="preset-btn" data-preset="medium">中等筛选</button>
+                        <button class="preset-btn" data-preset="loose">宽松筛选</button>
+                        <button class="preset-btn active" data-preset="custom">自定义</button>
+                    </div>
+                    
+                    <div class="version-history">
+                        <h5><i class="fas fa-history"></i> 版本历史</h5>
+                        <div class="version-list" id="versionList">
+                            <!-- 版本历史将通过JavaScript动态生成 -->
+                        </div>
+                        <button class="btn btn-secondary export-small" id="clearHistoryBtn" style="margin-top: 10px;">
+                            <i class="fas fa-trash"></i> 清除历史记录
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>双色球智能筛选系统规则配置表 | 版本 3.1 | 最后更新: 2024年12月</p>
+            <p>本配置表支持58项规则动态调整，提供导入/导出、版本管理、参数验证等高级功能</p>
+            <p>提示：您可以将此HTML文件保存到本地（右键→另存为），离线使用所有功能</p>
+        </div>
+    </div>
+
+    <script>
+        // 规则数据定义 - 根据提供的表格数据更新
+        const ruleData = {
+            basic: [
+                {id: "R1", desc: "集合A（11分边码）包含要求", definition: "A = {01,03,04,06,07,09,10,12,13,15,16,18,19,21,22,24,25,27,28,30,31,33}", param: "{4,5,6}", type: "集合包含"},
+                {id: "R2", desc: "集合B（11分中码）包含要求", definition: "B = {02,05,08,11,14,17,20,23,26,29,32}", param: "{1,2}", type: "集合包含"},
+                {id: "R3", desc: "集合C（七分边码）包含要求", definition: "C = {01,05,06,10,11,15,16,20,21,25,26,30,31,33}", param: "{1,2,3,4}", type: "集合包含"},
+                {id: "R4", desc: "集合D（七分中码）包含要求", definition: "D = {02,03,04,07,08,09,12,13,14,17,18,19,22,23,24,27,28,29,32}", param: "{2,3,4,5}", type: "集合包含"},
+                {id: "R5", desc: "集合E（三分中码）包含要求", definition: "E = {02,03,04,05,06,07,08,09,10,13,14,15,16,17,18,19,20,21,24,25,26,27,28,29,30,31,32}", param: "{3,4,5}", type: "集合包含"},
+                {id: "R6", desc: "集合F（三分边码）包含要求", definition: "F = {01,11,12,22,23,33}", param: "{1,2,3}", type: "集合包含"},
+                {id: "R7", desc: "集合G（四分边码）包含要求", definition: "G = {01,08,09,16,18,25,26,33}", param: "{0,1,2,3,4}", type: "集合包含"},
+                {id: "R8", desc: "集合H（四分中码）包含要求", definition: "H = {02,03,04,05,06,07,10,11,12,13,14,15,17,19,20,21,22,23,24,27,28,29,30,31,32}", param: "{3,4,5,6}", type: "集合包含"},
+                {id: "R9", desc: "集合I（除4余0）包含要求", definition: "I = {04,08,12,16,20,24,28,32}", param: "{0,1,2,3,4}", type: "除余集合"},
+                {id: "R10", desc: "集合J（除4余1）包含要求", definition: "J = {01,05,09,13,17,21,25,29,33}", param: "{0,1,2,3,4}", type: "除余集合"},
+                {id: "R11", desc: "集合K（除4余2）包含要求", definition: "K = {02,06,10,14,18,22,26,30}", param: "{0,1,2,3,4}", type: "除余集合"},
+                {id: "R12", desc: "集合L（除4余3）包含要求", definition: "L = {03,07,11,15,19,23,27,31}", param: "{0,1,2,3,4}", type: "除余集合"},
+                {id: "R13", desc: "集合M（除4边码）包含要求", definition: "M = {01,02,03,04,30,31,32,33}", param: "{1,2,3}", type: "除余集合"},
+                {id: "R14", desc: "集合N（上期结果）包含要求", definition: "N = {05,06,09,21,28,30}", param: "{1,2}", type: "上期相关"},
+                {id: "R15", desc: "集合O（上期邻号）包含要求", definition: "O = {04,05,06,07,08,10,20,22,27,29,31}", param: "{2,3,4}", type: "上期相关"},
+                {id: "R16", desc: "集合P（除3余0）包含要求", definition: "P = {03,06,09,12,15,18,21,24,27,30,33}", param: "{0,1,2,3}", type: "除余集合"},
+                {id: "R17", desc: "集合Q（除3余1）包含要求", definition: "Q = {01,04,07,10,13,16,19,22,25,28,31}", param: "{0,1,2,3}", type: "除余集合"},
+                {id: "R18", desc: "集合R（除3余2）包含要求", definition: "R = {02,05,08,11,14,17,20,23,26,29,32}", param: "{0,1,2,3}", type: "除余集合"},
+                {id: "R19", desc: "集合S（除3边码）包含要求", definition: "S = {01,02,03,31,32,33}", param: "{0,1,2,3}", type: "除余集合"},
+                {id: "R20", desc: "集合T（质数）包含要求", definition: "T = {01,02,03,05,07,11,13,17,19,23,29,31}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R21", desc: "集合U（质合边码）包含要求", definition: "U = {01,04,11,13,18,20,31,33}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R22", desc: "集合V（小质数）包含要求", definition: "V = {01,02,03,05,07,11}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R23", desc: "集合W（大质数）包含要求", definition: "W = {13,17,19,23,29,31}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R24", desc: "集合X（合数）包含要求", definition: "X = {04,06,08,09,10,12,14,15,16,18,20,21,22,24,25,26,27,28,30,32,33}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R25", desc: "集合Y（小合数）包含要求", definition: "Y = {04,06,08,09,10,12,14,15,16,18}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R26", desc: "集合Z（大合数）包含要求", definition: "Z = {20,21,22,24,25,26,27,28,30,32,33}", param: "{1,2,3,4}", type: "质合数"},
+                {id: "R27", desc: "集合A1（小奇数）包含要求", definition: "A1 = {01,03,05,07,09,11,13,15}", param: "{1,2,3,4}", type: "奇偶数"},
+                {id: "R28", desc: "集合A2（大奇数）包含要求", definition: "A2 = {17,19,21,23,25,27,29,31,33}", param: "{1,2,3,4}", type: "奇偶数"},
+                {id: "R29", desc: "集合A3（小偶数）包含要求", definition: "A3 = {02,04,06,08,10,12,14,16}", param: "{1,2,3,4}", type: "奇偶数"},
+                {id: "R30", desc: "集合A4（大偶数）包含要求", definition: "A4 = {18,20,22,24,26,28,30,32}", param: "{1,2,3,4}", type: "奇偶数"},
+                {id: "R31", desc: "集合A5（奇偶边码）包含要求", definition: "A5 = {01,02,15,16,17,18,32,33}", param: "{1,2,3,4}", type: "奇偶数"}
+            ],
+            partition: [
+                {id: "R32", desc: "三分区要求", definition: "一区：01-11<br>二区：12-22<br>三区：23-33", param: "一区个数 ∈ {1,2}", type: "分区分布"},
+                {id: "R33", desc: "四分区要求（含边界码17）", definition: "一区：01-08<br>二区：09-16<br>边界码：17（独立）<br>三区：18-25<br>四区：26-33", param: "一区个数 ∈ {1,2}<br>二区个数 ∈ {0,1,2,3}<br>三区个数 ∈ {1,2,3}<br>四区个数 ∈ {1,2}<br>边界码出现 ∈ {0,1}", type: "分区分布"},
+                {id: "R34", desc: "七分区要求", definition: "一区：01-05<br>二区：06-10<br>三区：11-15<br>四区：16-20<br>五区：21-25<br>六区：26-30<br>七区：31-33", param: "空区数 ∈ [1,3]<br>三区和五区不能同时为空", type: "分区分布"},
+                {id: "R35", desc: "十一分区要求", definition: "33个号码等分为11区,每区3个连续号码", param: "有号码的分区总数 ∈ {4,5,6}", type: "分区分布"}
+            ],
+            position: [
+                {id: "R36", desc: "第一位范围", definition: "最小号码", param: "[01,04]", type: "位置范围"},
+                {id: "R37", desc: "第二位范围", definition: "第二位号码", param: "[02,18]", type: "位置范围"},
+                {id: "R38", desc: "第三位范围", definition: "第三位号码", param: "[10,23]", type: "位置范围"},
+                {id: "R39", desc: "第四位范围", definition: "第四位号码", param: "[11,26] 且 ∉ {12,22}", type: "位置范围"},
+                {id: "R40", desc: "第五位范围", definition: "第五位号码", param: "[16,28]", type: "位置范围"},
+                {id: "R41", desc: "凤尾范围", definition: "第六位号码", param: "[21,29]", type: "位置范围"},
+                {id: "R42", desc: "首尾跨度要求", definition: "跨度 = 最大号 - 最小号", param: "[16,28] 且 ∉ {21,22}", type: "跨度要求"}
+            ],
+            numeric: [
+                {id: "R43", desc: "AC值要求", definition: "AC值", param: "[4,9]", type: "数值特征"},
+                {id: "R44", desc: "同尾号要求", definition: "必须包含至少1组同尾号", param: "是", type: "同尾号"},
+                {id: "R45", desc: "同尾号组数限制", definition: "同尾号组数", param: "1 ≤ 同尾号组数 ≤ 2", type: "同尾号"},
+                {id: "R46", desc: "同一尾数最大个数限制", definition: "同一尾数最多出现3个号码", param: "≤3", type: "同尾号"},
+                {id: "R47", desc: "奇偶比限制", definition: "奇偶比", param: "允许：2:4, 3:3, 4:2<br>禁止：0:6, 6:0, 1:5, 5:1", type: "奇偶比"},
+                {id: "R48", desc: "和值范围及排除", definition: "和值", param: "[60,130] 且 ∉ {113,111,63,109}", type: "和值"},
+                {id: "R49", desc: "和值尾数排除", definition: "和值尾数", param: "∉ {1,3,7}", type: "和值"},
+                {id: "R50", desc: "连号限制", definition: "连号", param: "最多允许2组两连号<br>禁止出现任何三连号及以上", type: "连号"},
+                {id: "R51", desc: "特定号码排除关系", definition: "01和05", param: "不能同时出现", type: "排除关系"},
+                {id: "R52", desc: "最大相邻间距限制", definition: "相邻两号差值", param: "最大差值 ≤ 12", type: "间距限制"},
+                {id: "R53", desc: "特定号码排除关系", definition: "不能同时出现", param: "17和19", type: "排除关系"},
+                {id: "R54", desc: "特定号码排除关系", definition: "不能同时出现", param: "08和07", type: "排除关系"},
+                {id: "R55", desc: "特定号码排除关系", definition: "不能同时出现", param: "18和28", type: "排除关系"},
+                {id: "R56", desc: "特定号码排除关系", definition: "不能同时出现", param: "14和22", type: "排除关系"},
+                {id: "R57", desc: "特定号码排除关系", definition: "不能同时出现", param: "15和22", type: "排除关系"}
+            ],
+            blue: [
+                {id: "R58", desc: "蓝球固定选择", definition: "蓝球", param: "01", type: "固定值"}
+            ]
+        };
+
+        // 规则分组定义 - 根据type属性分组
+        const ruleGroups = {
+            basic: {
+                "分边码集合": ruleData.basic.filter(rule => rule.type === "集合包含"),
+                "除余集合": ruleData.basic.filter(rule => rule.type === "除余集合"),
+                "上期相关": ruleData.basic.filter(rule => rule.type === "上期相关"),
+                "质合数集合": ruleData.basic.filter(rule => rule.type === "质合数"),
+                "奇偶数集合": ruleData.basic.filter(rule => rule.type === "奇偶数")
+            }
+        };
+
+        // 预设配置
+        const presets = {
+            strict: {
+                name: "严格筛选",
+                basic: [
+                    "{4,5,6}", "{1,2}", "{1,2,3}", "{2,3,4,5}", "{3,4,5}",
+                    "{1,2,3}", "{0,1,2}", "{3,4,5,6}", "{0,1,2}", "{0,1,2}",
+                    "{0,1,2}", "{0,1,2}", "{1,2,3}", "{1,2}", "{2,3,4}",
+                    "{0,1,2}", "{0,1,2}", "{0,1,2}", "{0,1,2}", "{1,2,3}",
+                    "{1,2,3}", "{1,2}", "{1,2}", "{1,2,3}", "{1,2}",
+                    "{1,2}", "{1,2,3}", "{1,2}", "{1,2}", "{1,2}", "{1,2}"
+                ],
+                partition: [
+                    "一区个数 ∈ {1,2}",
+                    "一区个数 ∈ {1,2}<br>二区个数 ∈ {1,2}<br>三区个数 ∈ {1,2}<br>四区个数 ∈ {1,2}<br>边界码出现 ∈ {0,1}",
+                    "空区数 ∈ [1,2]<br>三区和五区不能同时为空",
+                    "有号码的分区总数 ∈ {4,5}"
+                ],
+                position: [
+                    "[01,03]", "[02,15]", "[10,20]", "[11,25] 且 ∉ {12,22}", "[16,26]", "[21,28]", "[16,26] 且 ∉ {21,22}"
+                ],
+                numeric: [
+                    "[4,8]", "是", "1 ≤ 同尾号组数 ≤ 2", "≤3", "允许：2:4, 3:3, 4:2<br>禁止：0:6, 6:0, 1:5, 5:1",
+                    "[70,120] 且 ∉ {113,111,63,109}", "∉ {1,3,7}", "最多允许2组两连号<br>禁止出现任何三连号及以上",
+                    "不能同时出现", "最大差值 ≤ 12", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现"
+                ],
+                blue: ["01"]
+            },
+            medium: {
+                name: "中等筛选",
+                basic: [
+                    "{4,5,6}", "{1,2}", "{1,2,3,4}", "{2,3,4,5}", "{3,4,5}",
+                    "{1,2,3}", "{0,1,2,3}", "{3,4,5,6}", "{0,1,2,3}", "{0,1,2,3}",
+                    "{0,1,2,3}", "{0,1,2,3}", "{1,2,3}", "{1,2}", "{2,3,4}",
+                    "{0,1,2,3}", "{0,1,2,3}", "{0,1,2,3}", "{0,1,2,3}", "{1,2,3,4}",
+                    "{1,2,3,4}", "{1,2,3}", "{1,2,3}", "{1,2,3,4}", "{1,2,3}",
+                    "{1,2,3}", "{1,2,3,4}", "{1,2,3}", "{1,2,3}", "{1,2,3}", "{1,2,3}"
+                ],
+                partition: [
+                    "一区个数 ∈ {1,2}",
+                    "一区个数 ∈ {1,2}<br>二区个数 ∈ {0,1,2,3}<br>三区个数 ∈ {1,2,3}<br>四区个数 ∈ {1,2}<br>边界码出现 ∈ {0,1}",
+                    "空区数 ∈ [1,3]<br>三区和五区不能同时为空",
+                    "有号码的分区总数 ∈ {4,5,6}"
+                ],
+                position: [
+                    "[01,04]", "[02,18]", "[10,23]", "[11,26] 且 ∉ {12,22}", "[16,28]", "[21,29]", "[16,28] 且 ∉ {21,22}"
+                ],
+                numeric: [
+                    "[4,9]", "是", "1 ≤ 同尾号组数 ≤ 2", "≤3", "允许：2:4, 3:3, 4:2<br>禁止：0:6, 6:0, 1:5, 5:1",
+                    "[60,130] 且 ∉ {113,111,63,109}", "∉ {1,3,7}", "最多允许2组两连号<br>禁止出现任何三连号及以上",
+                    "不能同时出现", "最大差值 ≤ 12", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现"
+                ],
+                blue: ["01"]
+            },
+            loose: {
+                name: "宽松筛选",
+                basic: [
+                    "{4,5,6}", "{1,2}", "{1,2,3,4}", "{2,3,4,5}", "{3,4,5}",
+                    "{1,2,3}", "{0,1,2,3,4}", "{3,4,5,6}", "{0,1,2,3,4}", "{0,1,2,3,4}",
+                    "{0,1,2,3,4}", "{0,1,2,3,4}", "{1,2,3}", "{1,2}", "{2,3,4}",
+                    "{0,1,2,3}", "{0,1,2,3}", "{0,1,2,3}", "{0,1,2,3}", "{1,2,3,4}",
+                    "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}",
+                    "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}", "{1,2,3,4}"
+                ],
+                partition: [
+                    "一区个数 ∈ {1,2}",
+                    "一区个数 ∈ {1,2}<br>二区个数 ∈ {0,1,2,3}<br>三区个数 ∈ {1,2,3}<br>四区个数 ∈ {1,2}<br>边界码出现 ∈ {0,1}",
+                    "空区数 ∈ [1,3]<br>三区和五区不能同时为空",
+                    "有号码的分区总数 ∈ {4,5,6}"
+                ],
+                position: [
+                    "[01,04]", "[02,18]", "[10,23]", "[11,26] 且 ∉ {12,22}", "[16,28]", "[21,29]", "[16,28] 且 ∉ {21,22}"
+                ],
+                numeric: [
+                    "[4,9]", "是", "1 ≤ 同尾号组数 ≤ 2", "≤3", "允许：2:4, 3:3, 4:2<br>禁止：0:6, 6:0, 1:5, 5:1",
+                    "[60,130] 且 ∉ {113,111,63,109}", "∉ {1,3,7}", "最多允许2组两连号<br>禁止出现任何三连号及以上",
+                    "不能同时出现", "最大差值 ≤ 12", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现", "不能同时出现"
+                ],
+                blue: ["01"]
+            }
+        };
+
+        // 默认参数值（用于重置）
+        const defaultParams = {
+            basic: ruleData.basic.map(rule => rule.param),
+            partition: ruleData.partition.map(rule => rule.param),
+            position: ruleData.position.map(rule => rule.param),
+            numeric: ruleData.numeric.map(rule => rule.param),
+            blue: ruleData.blue.map(rule => rule.param)
+        };
+
+        // 全局变量
+        let currentPreset = 'custom';
+        let saveTimeout;
+        let searchTimeouts = {};
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 生成所有表格
+            generateTables();
+            
+            // 加载保存的配置
+            loadSavedConfig();
+            
+            // 设置标签页切换
+            setupTabs();
+            
+            // 设置按钮事件
+            setupButtons();
+            
+            // 设置分类列表事件
+            setupCategoryList();
+            
+            // 设置搜索功能
+            setupSearch();
+            
+            // 设置预设选择器
+            setupPresets();
+            
+            // 设置版本历史
+            loadVersionHistory();
+            
+            // 设置输入验证
+            setupValidation();
+            
+            // 设置自动保存防抖
+            setupAutoSave();
+            
+            // 设置分组折叠
+            setupGroupCollapse();
+            
+            // 更新最后保存时间显示
+            updateLastSavedTime();
+        });
+
+        // 生成表格内容
+        function generateTables() {
+            // 基础集合规则表格（分组显示）
+            const basicContainer = document.querySelector('#basic-table-container');
+            basicContainer.innerHTML = '';
+            
+            // 创建分组表格
+            Object.keys(ruleGroups.basic).forEach(groupName => {
+                const groupRules = ruleGroups.basic[groupName];
+                if (groupRules.length === 0) return;
+                
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'rule-group';
+                groupDiv.innerHTML = `
+                    <div class="group-header">
+                        <span>${groupName} (${groupRules.length}条规则)</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="group-content">
+                        <table class="group-table" data-group="${groupName}">
+                            <thead>
+                                <tr>
+                                    <th width="80">规则ID</th>
+                                    <th width="220">规则描述</th>
+                                    <th>集合定义</th>
+                                    <th width="200">参数要求</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 规则行将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                basicContainer.appendChild(groupDiv);
+                
+                // 为分组表头添加点击事件
+                const groupHeader = groupDiv.querySelector('.group-header');
+                const groupContent = groupDiv.querySelector('.group-content');
+                const chevron = groupHeader.querySelector('i');
+                
+                groupHeader.addEventListener('click', function() {
+                    groupContent.classList.toggle('collapsed');
+                    chevron.classList.toggle('fa-chevron-down');
+                    chevron.classList.toggle('fa-chevron-up');
+                });
+                
+                // 生成分组内的规则行
+                const tbody = groupDiv.querySelector('tbody');
+                groupRules.forEach(rule => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="rule-id">${rule.id}</td>
+                        <td class="rule-desc">${rule.desc} <span class="parameter-type">${rule.type}</span></td>
+                        <td class="rule-definition">${rule.definition}</td>
+                        <td class="rule-param">
+                            <div class="input-with-validation">
+                                <input type="text" class="editable-cell" value="${rule.param}" data-rule="${rule.id}" data-rule-type="basic">
+                                <div class="validation-error"></div>
+                                <div class="help-text">格式示例: {1,2,3} 或 [1,5]</div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+
+            // 分区结构规则表格
+            const partitionTbody = document.querySelector('#partition-table tbody');
+            partitionTbody.innerHTML = '';
+            ruleData.partition.forEach(rule => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="rule-id">${rule.id}</td>
+                    <td class="rule-desc">${rule.desc} <span class="parameter-type">${rule.type}</span></td>
+                    <td class="rule-definition">${rule.definition}</td>
+                    <td class="rule-param">
+                        <div class="input-with-validation">
+                            <input type="text" class="editable-cell" value="${rule.param}" data-rule="${rule.id}" data-rule-type="partition">
+                            <div class="validation-error"></div>
+                        </div>
+                    </td>
+                `;
+                partitionTbody.appendChild(row);
+            });
+
+            // 位置与跨度规则表格
+            const positionTbody = document.querySelector('#position-table tbody');
+            positionTbody.innerHTML = '';
+            ruleData.position.forEach(rule => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="rule-id">${rule.id}</td>
+                    <td class="rule-desc">${rule.desc} <span class="parameter-type">${rule.type}</span></td>
+                    <td class="rule-definition">${rule.definition}</td>
+                    <td class="rule-param">
+                        <div class="input-with-validation">
+                            <input type="text" class="editable-cell" value="${rule.param}" data-rule="${rule.id}" data-rule-type="position">
+                            <div class="validation-error"></div>
+                        </div>
+                    </td>
+                `;
+                positionTbody.appendChild(row);
+            });
+
+            // 数值特征与排除规则表格
+            const numericTbody = document.querySelector('#numeric-table tbody');
+            numericTbody.innerHTML = '';
+            ruleData.numeric.forEach(rule => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="rule-id">${rule.id}</td>
+                    <td class="rule-desc">${rule.desc} <span class="parameter-type">${rule.type}</span></td>
+                    <td class="rule-definition">${rule.definition}</td>
+                    <td class="rule-param">
+                        <div class="input-with-validation">
+                            <input type="text" class="editable-cell" value="${rule.param}" data-rule="${rule.id}" data-rule-type="numeric">
+                            <div class="validation-error"></div>
+                        </div>
+                    </td>
+                `;
+                numericTbody.appendChild(row);
+            });
+
+            // 蓝球规则表格
+            const blueTbody = document.querySelector('#blue-table tbody');
+            blueTbody.innerHTML = '';
+            ruleData.blue.forEach(rule => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="rule-id">${rule.id}</td>
+                    <td class="rule-desc">${rule.desc} <span class="parameter-type">${rule.type}</span></td>
+                    <td class="rule-definition">${rule.definition}</td>
+                    <td class="rule-param">
+                        <div class="input-with-validation">
+                            <input type="text" class="editable-cell" value="${rule.param}" data-rule="${rule.id}" data-rule-type="blue">
+                            <div class="validation-error"></div>
+                        </div>
+                    </td>
+                `;
+                blueTbody.appendChild(row);
+            });
+        }
+
+        // 设置标签页切换
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新活动标签
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新分类列表
+                    document.querySelectorAll('.rule-category').forEach(cat => {
+                        cat.classList.remove('active');
+                        if (cat.getAttribute('data-tab') === tabId) {
+                            cat.classList.add('active');
+                        }
+                    });
+                    
+                    // 显示对应内容
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // 设置分类列表事件
+        function setupCategoryList() {
+            const categories = document.querySelectorAll('.rule-category');
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            categories.forEach(category => {
+                category.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新活动分类
+                    categories.forEach(cat => cat.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新顶部标签
+                    tabs.forEach(tab => {
+                        tab.classList.remove('active');
+                        if (tab.getAttribute('data-tab') === tabId) {
+                            tab.classList.add('active');
+                        }
+                    });
+                    
+                    // 显示对应内容
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // 设置搜索功能
+        function setupSearch() {
+            // 基础规则搜索
+            document.getElementById('basicSearch').addEventListener('input', function() {
+                clearTimeout(searchTimeouts.basic);
+                searchTimeouts.basic = setTimeout(() => {
+                    searchRules('basic', this.value);
+                }, 300);
+            });
+            
+            // 分区规则搜索
+            document.getElementById('partitionSearch').addEventListener('input', function() {
+                clearTimeout(searchTimeouts.partition);
+                searchTimeouts.partition = setTimeout(() => {
+                    searchRules('partition', this.value);
+                }, 300);
+            });
+            
+            // 位置规则搜索
+            document.getElementById('positionSearch').addEventListener('input', function() {
+                clearTimeout(searchTimeouts.position);
+                searchTimeouts.position = setTimeout(() => {
+                    searchRules('position', this.value);
+                }, 300);
+            });
+            
+            // 数值规则搜索
+            document.getElementById('numericSearch').addEventListener('input', function() {
+                clearTimeout(searchTimeouts.numeric);
+                searchTimeouts.numeric = setTimeout(() => {
+                    searchRules('numeric', this.value);
+                }, 300);
+            });
+        }
+
+        // 搜索规则
+        function searchRules(category, searchTerm) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            
+            if (!searchLower) {
+                // 显示所有行
+                document.querySelectorAll(`#${category}-table tbody tr, .group-table tbody tr`).forEach(row => {
+                    row.style.display = '';
+                });
+                return;
+            }
+            
+            // 搜索基础规则（分组表格）
+            if (category === 'basic') {
+                document.querySelectorAll('.group-table tbody tr').forEach(row => {
+                    const id = row.querySelector('.rule-id').textContent.toLowerCase();
+                    const desc = row.querySelector('.rule-desc').textContent.toLowerCase();
+                    const definition = row.querySelector('.rule-definition').textContent.toLowerCase();
+                    const param = row.querySelector('.editable-cell').value.toLowerCase();
+                    
+                    if (id.includes(searchLower) || desc.includes(searchLower) || 
+                        definition.includes(searchLower) || param.includes(searchLower)) {
+                        row.style.display = '';
+                        // 确保所属分组是展开的
+                        const groupContent = row.closest('.group-content');
+                        if (groupContent) {
+                            groupContent.classList.remove('collapsed');
+                            const chevron = groupContent.previousElementSibling.querySelector('i');
+                            if (chevron) {
+                                chevron.classList.remove('fa-chevron-down');
+                                chevron.classList.add('fa-chevron-up');
+                            }
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            } else {
+                // 搜索其他规则
+                document.querySelectorAll(`#${category}-table tbody tr`).forEach(row => {
+                    const id = row.querySelector('.rule-id').textContent.toLowerCase();
+                    const desc = row.querySelector('.rule-desc').textContent.toLowerCase();
+                    const definition = row.querySelector('.rule-definition').textContent.toLowerCase();
+                    const param = row.querySelector('.editable-cell').value.toLowerCase();
+                    
+                    if (id.includes(searchLower) || desc.includes(searchLower) || 
+                        definition.includes(searchLower) || param.includes(searchLower)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // 设置预设选择器
+        function setupPresets() {
+            const presetButtons = document.querySelectorAll('.preset-btn');
+            
+            presetButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const preset = this.getAttribute('data-preset');
+                    
+                    // 更新按钮状态
+                    presetButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 应用预设
+                    applyPreset(preset);
+                    currentPreset = preset;
+                });
+            });
+        }
+
+        // 应用预设配置
+        function applyPreset(preset) {
+            if (preset === 'custom') return;
+            
+            if (confirm(`确定要应用"${presets[preset].name}"预设吗？这将覆盖当前配置。`)) {
+                // 应用基础规则预设
+                const basicInputs = document.querySelectorAll('#basic-table-container .editable-cell');
+                if (presets[preset].basic && basicInputs.length === presets[preset].basic.length) {
+                    basicInputs.forEach((input, index) => {
+                        input.value = presets[preset].basic[index];
+                        validateParameter(input);
+                    });
+                }
+                
+                // 应用分区规则预设
+                const partitionInputs = document.querySelectorAll('#partition-table .editable-cell');
+                if (presets[preset].partition && partitionInputs.length === presets[preset].partition.length) {
+                    partitionInputs.forEach((input, index) => {
+                        input.value = presets[preset].partition[index];
+                        validateParameter(input);
+                    });
+                }
+                
+                // 应用位置规则预设
+                const positionInputs = document.querySelectorAll('#position-table .editable-cell');
+                if (presets[preset].position && positionInputs.length === presets[preset].position.length) {
+                    positionInputs.forEach((input, index) => {
+                        input.value = presets[preset].position[index];
+                        validateParameter(input);
+                    });
+                }
+                
+                // 应用数值规则预设
+                const numericInputs = document.querySelectorAll('#numeric-table .editable-cell');
+                if (presets[preset].numeric && numericInputs.length === presets[preset].numeric.length) {
+                    numericInputs.forEach((input, index) => {
+                        input.value = presets[preset].numeric[index];
+                        validateParameter(input);
+                    });
+                }
+                
+                // 应用蓝球规则预设
+                const blueInputs = document.querySelectorAll('#blue-table .editable-cell');
+                if (presets[preset].blue && blueInputs.length === presets[preset].blue.length) {
+                    blueInputs.forEach((input, index) => {
+                        input.value = presets[preset].blue[index];
+                        validateParameter(input);
+                    });
+                }
+                
+                showNotification(`已应用"${presets[preset].name}"预设配置`, 'success');
+            }
+        }
+
+        // 设置按钮事件
+        function setupButtons() {
+            // 保存配置按钮
+            document.getElementById('saveBtn').addEventListener('click', saveConfig);
+            
+            // 重置按钮
+            document.getElementById('resetBtn').addEventListener('click', resetConfig);
+            
+            // 导出按钮
+            document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+            
+            // 导入按钮
+            document.getElementById('importFile').addEventListener('change', importFromExcel);
+            
+            // 导出全部按钮
+            document.getElementById('exportAllBtn').addEventListener('click', exportToExcel);
+            
+            // 导出数值特征规则按钮
+            document.getElementById('exportNumericBtn').addEventListener('click', function() {
+                exportSpecificCategory('numeric', '数值特征与排除规则');
+            });
+            
+            // 清除历史记录按钮
+            document.getElementById('clearHistoryBtn').addEventListener('click', clearVersionHistory);
+        }
+
+        // 设置输入验证
+        function setupValidation() {
+            // 为所有可编辑单元格添加输入验证
+            document.querySelectorAll('.editable-cell').forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateParameter(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    // 输入时清除错误状态
+                    this.classList.remove('invalid');
+                    const errorDiv = this.parentElement.querySelector('.validation-error');
+                    if (errorDiv) {
+                        errorDiv.classList.remove('show');
+                        errorDiv.textContent = '';
+                    }
+                    
+                    // 切换到自定义预设
+                    if (currentPreset !== 'custom') {
+                        currentPreset = 'custom';
+                        document.querySelectorAll('.preset-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                            if (btn.getAttribute('data-preset') === 'custom') {
+                                btn.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        // 验证参数格式
+        function validateParameter(input) {
+            const value = input.value.trim();
+            const ruleType = input.getAttribute('data-rule-type');
+            let isValid = true;
+            let errorMessage = '';
+            
+            // 根据规则类型进行验证
+            switch(ruleType) {
+                case 'basic':
+                    // 集合参数验证: {数字,数字,...}
+                    if (!/^\{[\d\s,]+\}$/.test(value)) {
+                        isValid = false;
+                        errorMessage = '格式错误: 应为 {数字,数字,...} 格式，如 {1,2,3}';
+                    } else {
+                        // 验证集合内容是否合理
+                        const numbers = value.replace(/[{}]/g, '').split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+                        if (numbers.length === 0) {
+                            isValid = false;
+                            errorMessage = '集合不能为空';
+                        } else if (numbers.some(n => n < 0 || n > 33)) {
+                            isValid = false;
+                            errorMessage = '数字范围应为0-33';
+                        }
+                    }
+                    break;
+                    
+                case 'partition':
+                case 'position':
+                case 'numeric':
+                    // 通用验证: 不能为空
+                    if (!value) {
+                        isValid = false;
+                        errorMessage = '参数不能为空';
+                    }
+                    break;
+                    
+                case 'blue':
+                    // 蓝球验证: 应为01-16的数字
+                    if (!/^(0[1-9]|1[0-6])$/.test(value)) {
+                        isValid = false;
+                        errorMessage = '蓝球应为01-16的数字';
+                    }
+                    break;
+            }
+            
+            // 显示验证结果
+            if (!isValid) {
+                input.classList.add('invalid');
+                const errorDiv = input.parentElement.querySelector('.validation-error');
+                if (errorDiv) {
+                    errorDiv.textContent = errorMessage;
+                    errorDiv.classList.add('show');
+                }
+            } else {
+                input.classList.remove('invalid');
+                const errorDiv = input.parentElement.querySelector('.validation-error');
+                if (errorDiv) {
+                    errorDiv.classList.remove('show');
+                }
+            }
+            
+            return isValid;
+        }
+
+        // 设置自动保存防抖
+        function setupAutoSave() {
+            document.querySelectorAll('.editable-cell').forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(() => {
+                        saveConfig();
+                    }, 2000); // 2秒后自动保存
+                });
+            });
+        }
+
+        // 设置分组折叠
+        function setupGroupCollapse() {
+            const collapseToggle = document.getElementById('basicCollapseToggle');
+            if (collapseToggle) {
+                collapseToggle.addEventListener('click', function() {
+                    const groups = document.querySelectorAll('.rule-group .group-content');
+                    const allCollapsed = Array.from(groups).every(group => group.classList.contains('collapsed'));
+                    const icon = this.querySelector('i');
+                    
+                    groups.forEach(group => {
+                        if (allCollapsed) {
+                            group.classList.remove('collapsed');
+                            const chevron = group.previousElementSibling.querySelector('i');
+                            if (chevron) {
+                                chevron.classList.remove('fa-chevron-down');
+                                chevron.classList.add('fa-chevron-up');
+                            }
+                        } else {
+                            group.classList.add('collapsed');
+                            const chevron = group.previousElementSibling.querySelector('i');
+                            if (chevron) {
+                                chevron.classList.remove('fa-chevron-up');
+                                chevron.classList.add('fa-chevron-down');
+                            }
+                        }
+                    });
+                    
+                    // 更新图标和文本
+                    icon.classList.toggle('fa-chevron-down', !allCollapsed);
+                    icon.classList.toggle('fa-chevron-up', allCollapsed);
+                    this.innerHTML = `<i class="fas fa-chevron-${allCollapsed ? 'down' : 'up'}"></i> ${allCollapsed ? '展开所有分组' : '折叠所有分组'}`;
+                });
+            }
+        }
+
+        // 保存配置到本地存储
+        function saveConfig() {
+            // 验证所有输入
+            let allValid = true;
+            document.querySelectorAll('.editable-cell').forEach(input => {
+                if (!validateParameter(input)) {
+                    allValid = false;
+                }
+            });
+            
+            if (!allValid) {
+                showNotification('部分参数格式错误，请检查后重试', 'error');
+                return;
+            }
+            
+            const config = {
+                basic: [],
+                partition: [],
+                position: [],
+                numeric: [],
+                blue: [],
+                savedAt: new Date().toISOString(),
+                preset: currentPreset
+            };
+            
+            // 收集基础规则参数
+            document.querySelectorAll('#basic-table-container .editable-cell').forEach((input, index) => {
+                config.basic[index] = input.value;
+            });
+            
+            // 收集分区规则参数
+            document.querySelectorAll('#partition-table .editable-cell').forEach((input, index) => {
+                config.partition[index] = input.value;
+            });
+            
+            // 收集位置规则参数
+            document.querySelectorAll('#position-table .editable-cell').forEach((input, index) => {
+                config.position[index] = input.value;
+            });
+            
+            // 收集数值规则参数
+            document.querySelectorAll('#numeric-table .editable-cell').forEach((input, index) => {
+                config.numeric[index] = input.value;
+            });
+            
+            // 收集蓝球规则参数
+            document.querySelectorAll('#blue-table .editable-cell').forEach((input, index) => {
+                config.blue[index] = input.value;
+            });
+            
+            // 保存到本地存储
+            localStorage.setItem('ssqRuleConfig', JSON.stringify(config));
+            
+            // 保存到版本历史
+            saveToVersionHistory(config);
+            
+            // 更新最后保存时间
+            updateLastSavedTime();
+            
+            showNotification('配置已成功保存到浏览器本地存储！', 'success');
+        }
+
+        // 保存到版本历史
+        function saveToVersionHistory(config) {
+            const version = {
+                id: Date.now(),
+                name: `配置_${new Date().toLocaleString('zh-CN', { hour12: false })}`,
+                config: config,
+                savedAt: new Date().toISOString()
+            };
+            
+            let history = JSON.parse(localStorage.getItem('ssqConfigHistory') || '[]');
+            history.unshift(version);
+            
+            // 只保留最近10个版本
+            if (history.length > 10) {
+                history = history.slice(0, 10);
+            }
+            
+            localStorage.setItem('ssqConfigHistory', JSON.stringify(history));
+            
+            // 更新版本历史显示
+            loadVersionHistory();
+        }
+
+        // 加载版本历史
+        function loadVersionHistory() {
+            const versionList = document.getElementById('versionList');
+            if (!versionList) return;
+            
+            const history = JSON.parse(localStorage.getItem('ssqConfigHistory') || '[]');
+            
+            if (history.length === 0) {
+                versionList.innerHTML = '<div class="version-item">暂无历史记录</div>';
+                return;
+            }
+            
+            versionList.innerHTML = '';
+            history.forEach(version => {
+                const versionItem = document.createElement('div');
+                versionItem.className = 'version-item';
+                versionItem.innerHTML = `
+                    <div>
+                        <strong>${version.name}</strong>
+                        <div class="version-time">${new Date(version.savedAt).toLocaleString('zh-CN')}</div>
+                    </div>
+                    <button class="restore-btn" data-version-id="${version.id}">恢复</button>
+                `;
+                versionList.appendChild(versionItem);
+                
+                // 为恢复按钮添加事件
+                versionItem.querySelector('.restore-btn').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    restoreVersion(version.id);
+                });
+                
+                // 为整个版本项添加点击事件
+                versionItem.addEventListener('click', function() {
+                    restoreVersion(version.id);
+                });
+            });
+        }
+
+        // 恢复版本
+        function restoreVersion(versionId) {
+            const history = JSON.parse(localStorage.getItem('ssqConfigHistory') || '[]');
+            const version = history.find(v => v.id == versionId);
+            
+            if (!version) {
+                showNotification('找不到指定的版本', 'error');
+                return;
+            }
+            
+            if (confirm(`确定要恢复版本"${version.name}"吗？这将覆盖当前配置。`)) {
+                const config = version.config;
+                
+                // 恢复基础规则参数
+                document.querySelectorAll('#basic-table-container .editable-cell').forEach((input, index) => {
+                    if (config.basic && config.basic[index]) {
+                        input.value = config.basic[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 恢复分区规则参数
+                document.querySelectorAll('#partition-table .editable-cell').forEach((input, index) => {
+                    if (config.partition && config.partition[index]) {
+                        input.value = config.partition[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 恢复位置规则参数
+                document.querySelectorAll('#position-table .editable-cell').forEach((input, index) => {
+                    if (config.position && config.position[index]) {
+                        input.value = config.position[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 恢复数值规则参数
+                document.querySelectorAll('#numeric-table .editable-cell').forEach((input, index) => {
+                    if (config.numeric && config.numeric[index]) {
+                        input.value = config.numeric[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 恢复蓝球规则参数
+                document.querySelectorAll('#blue-table .editable-cell').forEach((input, index) => {
+                    if (config.blue && config.blue[index]) {
+                        input.value = config.blue[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 更新预设状态
+                currentPreset = config.preset || 'custom';
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-preset') === currentPreset) {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                showNotification(`已恢复版本"${version.name}"`, 'success');
+            }
+        }
+
+        // 清除版本历史
+        function clearVersionHistory() {
+            if (confirm('确定要清除所有版本历史记录吗？此操作不可撤销。')) {
+                localStorage.removeItem('ssqConfigHistory');
+                loadVersionHistory();
+                showNotification('版本历史记录已清除', 'info');
+            }
+        }
+
+        // 从本地存储加载配置
+        function loadSavedConfig() {
+            const savedConfig = localStorage.getItem('ssqRuleConfig');
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    
+                    // 应用基础规则参数
+                    if (config.basic) {
+                        document.querySelectorAll('#basic-table-container .editable-cell').forEach((input, index) => {
+                            if (config.basic[index]) {
+                                input.value = config.basic[index];
+                            }
+                        });
+                    }
+                    
+                    // 应用分区规则参数
+                    if (config.partition) {
+                        document.querySelectorAll('#partition-table .editable-cell').forEach((input, index) => {
+                            if (config.partition[index]) {
+                                input.value = config.partition[index];
+                            }
+                        });
+                    }
+                    
+                    // 应用位置规则参数
+                    if (config.position) {
+                        document.querySelectorAll('#position-table .editable-cell').forEach((input, index) => {
+                            if (config.position[index]) {
+                                input.value = config.position[index];
+                            }
+                        });
+                    }
+                    
+                    // 应用数值规则参数
+                    if (config.numeric) {
+                        document.querySelectorAll('#numeric-table .editable-cell').forEach((input, index) => {
+                            if (config.numeric[index]) {
+                                input.value = config.numeric[index];
+                            }
+                        });
+                    }
+                    
+                    // 应用蓝球规则参数
+                    if (config.blue) {
+                        document.querySelectorAll('#blue-table .editable-cell').forEach((input, index) => {
+                            if (config.blue[index]) {
+                                input.value = config.blue[index];
+                            }
+                        });
+                    }
+                    
+                    // 应用预设状态
+                    if (config.preset) {
+                        currentPreset = config.preset;
+                        document.querySelectorAll('.preset-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                            if (btn.getAttribute('data-preset') === currentPreset) {
+                                btn.classList.add('active');
+                            }
+                        });
+                    }
+                    
+                    console.log('配置已从本地存储加载');
+                } catch (e) {
+                    console.error('加载保存的配置时出错:', e);
+                }
+            }
+        }
+
+        // 重置为默认值
+        function resetConfig() {
+            if (confirm('确定要重置所有参数为默认值吗？这将覆盖当前的所有修改。')) {
+                // 重置基础规则参数
+                document.querySelectorAll('#basic-table-container .editable-cell').forEach((input, index) => {
+                    input.value = defaultParams.basic[index];
+                    validateParameter(input);
+                });
+                
+                // 重置分区规则参数
+                document.querySelectorAll('#partition-table .editable-cell').forEach((input, index) => {
+                    input.value = defaultParams.partition[index];
+                    validateParameter(input);
+                });
+                
+                // 重置位置规则参数
+                document.querySelectorAll('#position-table .editable-cell').forEach((input, index) => {
+                    input.value = defaultParams.position[index];
+                    validateParameter(input);
+                });
+                
+                // 重置数值规则参数
+                document.querySelectorAll('#numeric-table .editable-cell').forEach((input, index) => {
+                    input.value = defaultParams.numeric[index];
+                    validateParameter(input);
+                });
+                
+                // 重置蓝球规则参数
+                document.querySelectorAll('#blue-table .editable-cell').forEach((input, index) => {
+                    input.value = defaultParams.blue[index];
+                    validateParameter(input);
+                });
+                
+                // 重置预设状态
+                currentPreset = 'custom';
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-preset') === 'custom') {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                // 清除本地存储
+                localStorage.removeItem('ssqRuleConfig');
+                
+                // 更新最后保存时间
+                updateLastSavedTime();
+                
+                showNotification('所有参数已重置为默认值！', 'info');
+            }
+        }
+
+        // 更新最后保存时间显示
+        function updateLastSavedTime() {
+            const savedConfig = localStorage.getItem('ssqRuleConfig');
+            const lastSavedElement = document.getElementById('lastSaved');
+            
+            if (savedConfig) {
+                try {
+                    const config = JSON.parse(savedConfig);
+                    if (config.savedAt) {
+                        const savedDate = new Date(config.savedAt);
+                        lastSavedElement.textContent = savedDate.toLocaleString('zh-CN');
+                        return;
+                    }
+                } catch (e) {
+                    console.error('解析保存时间时出错:', e);
+                }
+            }
+            
+            lastSavedElement.textContent = '无';
+        }
+
+        // 显示通知消息
+        function showNotification(message, type = 'info') {
+            // 移除可能存在的旧通知
+            const oldNotification = document.querySelector('.notification');
+            if (oldNotification) {
+                oldNotification.remove();
+            }
+            
+            // 创建新通知
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // 导入Excel文件
+        function importFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 解析Excel文件
+                    const importedConfig = parseExcelConfig(workbook);
+                    
+                    if (importedConfig) {
+                        // 应用导入的配置
+                        applyImportedConfig(importedConfig);
+                        showNotification('Excel配置导入成功！', 'success');
+                    } else {
+                        showNotification('Excel文件格式不正确', 'error');
+                    }
+                } catch (error) {
+                    console.error('导入Excel时出错:', error);
+                    showNotification('导入Excel文件失败: ' + error.message, 'error');
+                }
+                
+                // 清空文件输入
+                event.target.value = '';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 解析Excel配置
+        function parseExcelConfig(workbook) {
+            const config = {
+                basic: [],
+                partition: [],
+                position: [],
+                numeric: [],
+                blue: []
+            };
+            
+            // 解析基础集合规则
+            const basicSheet = workbook.Sheets['基础集合规则'];
+            if (basicSheet) {
+                const basicData = XLSX.utils.sheet_to_json(basicSheet, { header: 1 });
+                basicData.slice(1).forEach(row => {
+                    if (row[3]) {
+                        config.basic.push(row[3]);
+                    }
+                });
+            }
+            
+            // 解析分区结构规则
+            const partitionSheet = workbook.Sheets['分区结构规则'];
+            if (partitionSheet) {
+                const partitionData = XLSX.utils.sheet_to_json(partitionSheet, { header: 1 });
+                partitionData.slice(1).forEach(row => {
+                    if (row[3]) {
+                        config.partition.push(row[3]);
+                    }
+                });
+            }
+            
+            // 解析位置与跨度规则
+            const positionSheet = workbook.Sheets['位置与跨度规则'];
+            if (positionSheet) {
+                const positionData = XLSX.utils.sheet_to_json(positionSheet, { header: 1 });
+                positionData.slice(1).forEach(row => {
+                    if (row[3]) {
+                        config.position.push(row[3]);
+                    }
+                });
+            }
+            
+            // 解析数值特征与排除规则
+            const numericSheet = workbook.Sheets['数值特征与排除规则'];
+            if (numericSheet) {
+                const numericData = XLSX.utils.sheet_to_json(numericSheet, { header: 1 });
+                numericData.slice(1).forEach(row => {
+                    if (row[3]) {
+                        config.numeric.push(row[3]);
+                    }
+                });
+            }
+            
+            // 解析蓝球规则
+            const blueSheet = workbook.Sheets['蓝球规则'];
+            if (blueSheet) {
+                const blueData = XLSX.utils.sheet_to_json(blueSheet, { header: 1 });
+                blueData.slice(1).forEach(row => {
+                    if (row[3]) {
+                        config.blue.push(row[3]);
+                    }
+                });
+            }
+            
+            // 检查是否成功解析了所有规则
+            if (config.basic.length === 31 && config.partition.length === 4 && 
+                config.position.length === 7 && config.numeric.length === 15 && 
+                config.blue.length === 1) {
+                return config;
+            }
+            
+            return null;
+        }
+
+        // 应用导入的配置
+        function applyImportedConfig(config) {
+            if (confirm('确定要应用导入的Excel配置吗？这将覆盖当前配置。')) {
+                // 应用基础规则参数
+                document.querySelectorAll('#basic-table-container .editable-cell').forEach((input, index) => {
+                    if (config.basic && config.basic[index]) {
+                        input.value = config.basic[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 应用分区规则参数
+                document.querySelectorAll('#partition-table .editable-cell').forEach((input, index) => {
+                    if (config.partition && config.partition[index]) {
+                        input.value = config.partition[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 应用位置规则参数
+                document.querySelectorAll('#position-table .editable-cell').forEach((input, index) => {
+                    if (config.position && config.position[index]) {
+                        input.value = config.position[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 应用数值规则参数
+                document.querySelectorAll('#numeric-table .editable-cell').forEach((input, index) => {
+                    if (config.numeric && config.numeric[index]) {
+                        input.value = config.numeric[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 应用蓝球规则参数
+                document.querySelectorAll('#blue-table .editable-cell').forEach((input, index) => {
+                    if (config.blue && config.blue[index]) {
+                        input.value = config.blue[index];
+                        validateParameter(input);
+                    }
+                });
+                
+                // 更新预设状态为自定义
+                currentPreset = 'custom';
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-preset') === 'custom') {
+                        btn.classList.add('active');
+                    }
+                });
+                
+                showNotification('Excel配置已成功应用！', 'success');
+            }
+        }
+
+        // 导出为Excel文件（完整）
+        function exportToExcel() {
+            exportSpecificCategory('all', '完整配置');
+        }
+
+        // 导出特定类别的规则
+        function exportSpecificCategory(category, categoryName) {
+            // 创建工作簿
+            const wb = XLSX.utils.book_new();
+            
+            // 如果导出全部，添加所有工作表
+            if (category === 'all') {
+                // 准备各工作表数据
+                const sheets = [
+                    { name: "基础集合规则", tableId: "basic-table-container", rows: ruleData.basic, grouped: true },
+                    { name: "分区结构规则", tableId: "partition-table", rows: ruleData.partition },
+                    { name: "位置与跨度规则", tableId: "position-table", rows: ruleData.position },
+                    { name: "数值特征与排除规则", tableId: "numeric-table", rows: ruleData.numeric },
+                    { name: "蓝球规则", tableId: "blue-table", rows: ruleData.blue }
+                ];
+                
+                sheets.forEach(sheetInfo => {
+                    addSheetToWorkbook(wb, sheetInfo);
+                });
+                
+                // 添加汇总工作表
+                addSummarySheet(wb);
+                
+                // 生成文件名
+                const filename = `双色球规则完整配置_${new Date().toISOString().slice(0,10)}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                showNotification(`Excel文件 "${filename}" 已开始下载！`, 'success');
+            } else {
+                // 导出特定类别
+                const sheetInfo = {
+                    name: categoryName,
+                    tableId: `${category}-table`,
+                    rows: ruleData[category]
+                };
+                
+                addSheetToWorkbook(wb, sheetInfo);
+                
+                // 添加一个简单的汇总信息
+                const summaryData = [
+                    [`${categoryName} 配置导出`],
+                    ["生成时间", new Date().toLocaleString('zh-CN')],
+                    ["规则数量", sheetInfo.rows.length],
+                    ["导出类别", categoryName],
+                    [""],
+                    ["说明", "此文件仅包含指定类别的规则配置"]
+                ];
+                
+                const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+                const summaryCols = [
+                    { wch: 25 },
+                    { wch: 40 }
+                ];
+                summaryWs['!cols'] = summaryCols;
+                XLSX.utils.book_append_sheet(wb, summaryWs, "导出信息");
+                
+                // 生成文件名
+                const filename = `双色球${categoryName}配置_${new Date().toISOString().slice(0,10)}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                
+                showNotification(`${categoryName} Excel文件已开始下载！`, 'success');
+            }
+        }
+
+        // 添加工作表到工作簿
+        function addSheetToWorkbook(wb, sheetInfo) {
+            // 获取当前表格的输入值
+            let currentValues = [];
+            
+            if (sheetInfo.grouped) {
+                // 处理分组表格
+                const inputs = document.querySelectorAll(`#${sheetInfo.tableId} .editable-cell`);
+                currentValues = Array.from(inputs).map(input => input.value);
+            } else {
+                // 处理普通表格
+                const inputs = document.querySelectorAll(`#${sheetInfo.tableId} .editable-cell`);
+                currentValues = Array.from(inputs).map(input => input.value);
+            }
+            
+            // 准备数据行
+            const data = [
+                ["规则ID", "规则描述", 
+                 sheetInfo.name.includes("基础") ? "集合定义" : 
+                 sheetInfo.name.includes("分区") ? "分区定义" : 
+                 sheetInfo.name.includes("位置") ? "位置/跨度定义" : 
+                 sheetInfo.name.includes("蓝球") ? "固定值" : "特征定义", 
+                 "参数要求"]
+            ];
+            
+            // 添加数据行
+            sheetInfo.rows.forEach((rule, index) => {
+                data.push([
+                    rule.id,
+                    rule.desc,
+                    rule.definition.replace(/<br>/g, '\n'),
+                    currentValues[index] || rule.param
+                ]);
+            });
+            
+            // 创建工作表
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // 设置列宽
+            const wscols = [
+                { wch: 10 }, // 规则ID列宽
+                { wch: 35 }, // 规则描述列宽
+                { wch: 60 }, // 定义列宽
+                { wch: 40 }  // 参数要求列宽
+            ];
+            ws['!cols'] = wscols;
+            
+            // 将工作表添加到工作簿
+            XLSX.utils.book_append_sheet(wb, ws, sheetInfo.name);
+        }
+
+        // 添加汇总工作表
+        function addSummarySheet(wb) {
+            const summaryData = [
+                ["双色球智能筛选系统规则配置汇总"],
+                ["生成时间", new Date().toLocaleString('zh-CN')],
+                ["规则总数", "58"],
+                ["红球组合总数", "11,075,568"],
+                ["蓝球固定值", "01"],
+                ["当前预设", currentPreset === 'custom' ? '自定义' : presets[currentPreset].name],
+                [""],
+                ["规则类别", "规则数量", "规则ID范围"],
+                ["基础集合规则", "31", "R1-R31"],
+                ["分区结构规则", "4", "R32-R35"],
+                ["位置与跨度规则", "7", "R36-R42"],
+                ["数值特征与排除规则", "15", "R43-R57"],
+                ["蓝球规则", "1", "R58"],
+                [""],
+                ["说明", "所有黄色高亮单元格的参数均可编辑修改"],
+                ["", "修改后可使用系统保存功能保存到浏览器"],
+                ["", "或导出为新Excel文件"]
+            ];
+            
+            const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+            const summaryCols = [
+                { wch: 25 },
+                { wch: 15 },
+                { wch: 20 }
+            ];
+            summaryWs['!cols'] = summaryCols;
+            XLSX.utils.book_append_sheet(wb, summaryWs, "配置汇总");
+        }
+    </script>
+</body>
+</html>
